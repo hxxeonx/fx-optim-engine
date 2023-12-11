@@ -1,0 +1,11 @@
+## config.yaml
+
+debug: False
+mission: "train"
+load_model: False
+defaults:
+  - _self_
+  - dataset : FX
+  - model : Patchformer_ohlc_USDFSMB
+
+#  - optional dataset_model: ${dataset}_${model}
