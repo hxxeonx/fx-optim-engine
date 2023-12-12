@@ -1,19 +1,19 @@
-name: "Patchformer_ohlc_USDFSMB" #"Patchformer_ohlc_USDFSMB"
+name: "Transformer_optimize"      
 
-model_type: "LightPatch"         # "Basic", "LightPatch"
+model_type: "Basic"               # "Basic"
 
 n_epochs: 200
 batch_size: 8192
 lr: 0.00001                       # Default : 0.0001 >> 0.00001
 cuda: True
-num_classes: 1                   # Default : 2 (up, down)
+num_classes: 1                    # Default : 2 (up, down)
 
 ## Decompose model into Residual, Trend
 decomposition: False
 kernel_size: 9
 
 ## Data Embedding, Patch Related
-pe: "zeros"
+pe_method: "sincos"
 learn_pe: True
 patch_len: 1
 stride: 3
