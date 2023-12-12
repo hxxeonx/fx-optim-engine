@@ -1,8 +1,5 @@
 import os
-import math
 import torch
-import random
-from tqdm import tqdm
 
 import pandas as pd
 import numpy as np
@@ -23,14 +20,8 @@ class dataLoader:
             train_dat_npz                       = np.load(f'./Datas/{self.feature_mode}_train_data.npz', allow_pickle=True)
             test_dat_npz                        = np.load(f'./Datas/{self.feature_mode}_test_data.npz' , allow_pickle=True)
 
-            if self.feature_mode in ['c', 'momentum']:
-                self.train_x_npy, self.train_y_npy  = np.expand_dims(train_dat_npz["x"], 2), train_dat_npz["y"]
-                self.test_x_npy, self.test_y_npy    = np.expand_dims(test_dat_npz["x"], 2), test_dat_npz["y"]
-
-            else:
-                self.train_x_npy, self.train_y_npy  = train_dat_npz["x"], train_dat_npz["y"]
-                self.test_x_npy, self.test_y_npy    = test_dat_npz["x"], test_dat_npz["y"]
-            
+            self.train_x_npy, self.train_y_npy  = train_dat_npz["x"], train_dat_npz["y"]
+            self.test_x_npy, self.test_y_npy    = test_dat_npz["x"], test_dat_npz["y"]
 
             train_dat_npz.close()
             test_dat_npz.close()
@@ -38,27 +29,28 @@ class dataLoader:
     def _init_cfg(self, cfg):
         
         ##### (1) 필요한 파라미터 정의 #####
-        self.feature_mode       = cfg.dataset.feature_mode
-        self.predict_type       = cfg.dataset.predict_type
-        self.label_mode         = cfg.dataset.label_mode
+        self.scailing           = cfg.dataset.scailing                                                            # Data Scailing Flag 
+        if self.scailing:
+            self.feature_mode   = f'scaled_{cfg.dataset.feature_mode}'
+        else:
+            self.feature_mode       = cfg.dataset.feature_mode
+        self.predict_type       = cfg.dataset.predict_type                                                        # "Classification", "Regression"
+        self.label_mode         = cfg.dataset.label_mode                                                          # "optim_u", "optim_b" 
 
         self.time_interval      = int(cfg.dataset.time_interval)
 
         self.trn_batch_size     = cfg.model.batch_size
         self.val_batch_size     = cfg.dataset.val_batch_size
 
-        self.srt_mrk_t          = int(cfg.dataset.market_start_time)
-        self.end_mrk_t          = int(cfg.dataset.market_end_time)
+        self.srt_mrk_t          = int(cfg.dataset.market_start_time)                                              # Market Open Time  : 900
+        self.end_mrk_t          = int(cfg.dataset.market_end_time)                                                # Market Close Time : 1530
         self.trn_split_point    = datetime.strptime(cfg.dataset.train_split_point, "%m%d%y").strftime("%Y-%m-%d") # "2016-07-29"
         self.test_st_dt         = datetime.strptime(cfg.dataset.test_start_date, "%m%d%y").strftime("%Y-%m-%d")   # "2021-01-04"
 
         ##### (2) Feature/Target에 따라 필요한 데이터 로드 #####      
         self.fx_close_dat       = pd.read_csv(os.path.join(cfg.dataset.fx_data_dir, "usdkrw_futures_12yr_reshape.csv"), index_col=0).fillna(method="ffill")
+        self.target_dat         = pd.read_csv(os.path.join(cfg.dataset.fx_data_dir, f"{self.label_mode}_ver1.csv"), index_col=0)
 
-        if self.label_mode   == 'optim_u':
-            self.target_dat         = pd.read_csv(os.path.join(cfg.dataset.fx_data_dir, "optim_u_ver1.csv"), index_col=0)
-        elif self.label_mode == 'optim_b':
-            self.target_dat         = pd.read_csv(os.path.join(cfg.dataset.fx_data_dir, "optim_b_ver1.csv"), index_col=0)
 
     def _init_processing(self):
 
@@ -89,14 +81,26 @@ class dataLoader:
 
         self.train_x_npy, self.train_y_npy  = train_x[available_train_loc, :], train_y[available_train_loc]    
         self.test_x_npy , self.test_y_npy   = test_x [available_test_loc , :], test_y [available_test_loc]
+        
+        ##### (4*) Data Scailing  #####
+        if self.scailing:
+            train_set                  = self.fx_close_dat.loc[ : ,                       :  self.test_st_dt].iloc[:,:-1]  
+            self.max_p, self.min_p     = train_set.max().max(), train_set.min().min()
 
-        ##### (4) Data 저장 #####
+            self.train_x_npy = (self.train_x_npy - self.min_p) / (self.max_p - self.min_p)
+            self.train_y_npy = (self.train_y_npy - self.min_p) / (self.max_p - self.min_p)
+            self.test_x_npy  = (self.test_x_npy  - self.min_p) / (self.max_p - self.min_p)
+            self.test_y_npy  = (self.test_y_npy  - self.min_p) / (self.max_p - self.min_p) 
+
+        ##### (5) Data 저장 #####
         np.savez_compressed(f"./Datas/{self.feature_mode}_train_data.npz", x = self.train_x_npy, y = self.train_y_npy)
         np.savez_compressed(f"./Datas/{self.feature_mode}_test_data.npz" , x = self.test_x_npy , y = self.test_y_npy)
 
     def load_data(self):
-
         trn_val_rat                         = int(self.train_x_npy.shape[0] * 0.8)
+        
+        if (self.train_x_npy.ndim < 3) or (self.test_x_npy.ndim < 3):
+            self.train_x_npy, self.test_x_npy = np.expand_dims(self.train_x_npy, 2), np.expand_dims(self.test_x_npy, 2)
 
         self.train_x_npy, self.val_x_npy    = self.train_x_npy[:trn_val_rat], self.train_x_npy[trn_val_rat:]
         self.train_y_npy, self.val_y_npy    = self.train_y_npy[:trn_val_rat], self.train_y_npy[trn_val_rat:]
