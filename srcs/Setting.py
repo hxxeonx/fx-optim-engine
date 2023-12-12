@@ -1,45 +1,39 @@
-## torch imports
+
+''' Environment Settings '''
+
 import torch
 import torch.nn as nn
 
-## Import Dataloader 
 from srcs.utils import * 
 from srcs.Dataloader import dataLoader
+from transformers.Transformer_optim import Basic_Transformer
 
-# import transformers.dnn as dnn
-# import transformers.Patchformer_ohlc_USDFSMB as module_arch_Patchformer_ohlc_USDFSMB
 
-## Get Parameters for Training
-# (1) Dataloader
 def get_dataloader(cfg, cwd = './'):
     print(f'\nINFO: [get_dataloader] Loading Dataloader for dataset: {cfg.dataset.name} for npy: {cfg.dataset.npy}\n')
     return dataLoader(cfg)
-
     
-# (2) Model
 def get_model(cfg):
-    pass
-#     model = None
-#     #### PRETRAINERS
-#     if cfg.model.name == "Patchformer_ohlc_USDFSMB":
-#         if cfg.model.model_type == "LightPatch":
-#             model = module_arch_Patchformer_ohlc_USDFSMB.LightPatchformer_USDFSMB(cfg)
-#     elif cfg.model.name == 'dnn':
-#         model = dnn.DNN(cfg)
-#     else:
-#         raise NotImplementedError(f"Invalid model name: {cfg.model.name}")
+
+    # (2-1) 선택한 모델에 맞게 모델 로드
+    model = None
+    if cfg.model.name == "Transformer_optimize":
+        if cfg.model.model_type == "Basic":
+            model = Basic_Transformer(cfg)
+    else:
+        raise NotImplementedError(f"Invalid model name: {cfg.model.name}")
     
-#     assert model != None
+    assert model != None
 
-#     if cfg.dataset.data_type == "float64":
-#         return model.double()
-#     elif cfg.dataset.data_type == "float32":
-#         return model.float()
-#     else:
-#         print(f"ERROR: [get_model] Given data type is not supported yet: {cfg.dataset.data_type}")
-#         raise NotImplementedError()
+    # (2-2) 데이터 타입 설정
+    if cfg.dataset.data_type == "float64":
+        return model.double()
+    elif cfg.dataset.data_type == "float32":
+        return model.float()
+    else:
+        print(f"ERROR: [get_model] Given data type is not supported yet: {cfg.dataset.data_type}")
+        raise NotImplementedError()
 
-# (3) Loss Function
 def get_loss_fn(cfg):
     criterion = None
     if cfg.dataset.loss_fn in ['CrossEntropy', 'LogitNormLoss']:
@@ -56,7 +50,6 @@ def get_loss_fn(cfg):
         criterion = RMSELoss()
     return criterion
 
-## Setting Devices for Training
 def prepare_gpus(cfg, model):
     gpus = cfg.dataset.gpus
 
