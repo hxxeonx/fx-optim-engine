@@ -29,8 +29,8 @@ class dataLoader:
     def _init_cfg(self, cfg):
         
         ##### (1) 필요한 파라미터 정의 #####
-        self.scailing           = cfg.dataset.scailing                                                            # Data Scailing Flag 
-        if self.scailing:
+        self.scaling           = cfg.dataset.scaling                                                              # Data Scaling Flag 
+        if self.scaling:
             self.feature_mode   = f'scaled_{cfg.dataset.feature_mode}'
         else:
             self.feature_mode       = cfg.dataset.feature_mode
@@ -82,8 +82,8 @@ class dataLoader:
         self.train_x_npy, self.train_y_npy  = train_x[available_train_loc, :], train_y[available_train_loc]    
         self.test_x_npy , self.test_y_npy   = test_x [available_test_loc , :], test_y [available_test_loc]
         
-        ##### (4*) Data Scailing  #####
-        if self.scailing:
+        ##### (4*) Data Scaling  #####
+        if self.scaling:
             train_set                  = self.fx_close_dat.loc[ : ,                       :  self.test_st_dt].iloc[:,:-1]  
             self.max_p, self.min_p     = train_set.max().max(), train_set.min().min()
 

@@ -1,7 +1,7 @@
 ##### Basic Details #####
 name            : "FX"                                                                              # Dataset Name
 feature_mode    : "c"                                                                               # ["ohlc", "fft", "enc", "stl", "momentum", "ta_dwt"]
-scailing        : True
+scaling         : True
 seed            : 100
 
 fx_data_dir     : "C:/Users/Qraft/Desktop/CODE/HANA-FX/model-engine-test/Datas/raw_datas/"          # FX data directory, all data must be parsed into our very own npy format
