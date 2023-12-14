@@ -1,52 +1,55 @@
-name: "Transformer_optimize"      
 
-model_type: "Basic"               # "Basic"
+##### Basic Details #####
+name      : "Transformer_optimize"      
+model_type: "Basic"                       # "Basic"
 
-n_epochs: 200
+##### hard config #####
+cuda      : True
+
+##### Model Parameters #####
+n_epochs  : 200
 batch_size: 8192
-lr: 0.00001                       # Default : 0.0001 >> 0.00001
-cuda: True
-num_classes: 1                    # Default : 2 (up, down)
+lr        : 0.00001                       # Default : 0.0001 >> 0.00001
 
-## Decompose model into Residual, Trend
+##### Decompose model into Residual, Trend
 decomposition: False
-kernel_size: 9
+kernel_size  : 9
+max_seq_len  : 1024
 
 ## Data Embedding, Patch Related
-pe_method: "sincos"
-learn_pe: True
-patch_len: 1
-stride: 3
-padding_patch: False
-enc_in: 1                       # Defualt :: 2(fft, diff), 3(word2vec_enc), 4(OHLC),  6(OHLC, H_diff, L_diff)
+enc_in     : 1                            # Defualt :: 2(fft, diff), 3(word2vec_enc), 4(OHLC),  6(OHLC, H_diff, L_diff) 
+num_classes: 1 
+patch_len  : 1
+stride     : 3
+
+pe_method     : "sincos"
+learn_pe      : True
+padding_patch : False
 
 ## Encoder Related:
-e_layers: 1
-n_heads: 8
-d_model: 128
-d_k: null
-d_v: null
-d_ff: 256
-norm: "BatchNorm"
-attn_dropout: 0
-dropout: 0.1
-activation: "gelu"
-res_attention: True
-pre_norm: False
+e_layers  : 1
+n_heads   : 8
+d_model   : 128
+d_k       : null
+d_v       : null
+d_ff      : 256
+
+activation   : "gelu"
+norm         : "BatchNorm"
+dropout      : 0.1
+attn_dropout : 0
+
+pre_norm        : False
+res_attention   : True
 output_attention: False 
 
 ## Flatten Head Related
-pretrain_head: False
-head_type: "flatten"
-individual: True
-head_dropout: 0.1
-fc_dropout: 0.1
+head_type       : "flatten"
+pretrain_head   : False
+individual      : True
+head_dropout    : 0.1
+fc_dropout      : 0.1
 
 ## Inorm Related
 Inorm_affine: False
 subtract_last: False
-
-##
-max_seq_len: 1024
-
-model_path: ''

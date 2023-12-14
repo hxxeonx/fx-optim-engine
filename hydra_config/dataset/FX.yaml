@@ -7,7 +7,6 @@ seed            : 100
 fx_data_dir     : "C:/Users/Qraft/Desktop/CODE/HANA-FX/model-engine-test/Datas/raw_datas/"          # FX data directory, all data must be parsed into our very own npy format
 label_data_dir  : "C:/Users/Qraft/Desktop/CODE/HANA-FX/fx-Btest-framework/Datas/labels/"            # Label data directory, all data must be parsed into our very own npy format
 
-
 ##### Dates & Duration #####
 start_date        : "010110"                                                                        # start date for train-val-test dataset
 end_date          : "123120"                                                                        # end date for train-val-test dataset
@@ -25,24 +24,12 @@ data_type      : "float64"                                                      
 
 
 ##### Training Modes #####
-from_smb       : False
-
-pretrain_training_mode: False
-pretrain_patch_n      : 9
-pretrain_masking_ratio: 0.7
-pretrain_log_name     : "trial1"
-
-fine_tune_mode        : False
-
 save_pred             : False                                                                       # used for testing, to save the predictions; possibly for simulation, too
 model_save_freq       : 1
-early_stopping        : 0
-
 
 
 ##### Dataloader Configurations #####
 gpus              : [0]                                                                                 # for multi-gpu
-
 idx_delay         : 0                                                                                   # set an arbitrary delay to give an offset to overcome possible delays in the system
 
 val_batch_size    : 516                                                                                 # batch size for validation & test dataset
@@ -68,16 +55,14 @@ num_pair_logits   : 1
 predict_type                : "Regression"                                                              # For transformer ["classification", "Regression"]
 
 label_mode                  : "optim_u"                                                                 # "bid_ask", "midprice", "high_low", "optim_u", "optim_b"
-data_timescope_change       : 1                                                                         # collapse {n} seconds into one data point
 time_interval               : 60                                                                        # time interval for input
-f_horizon                   : 60                                                                         # time interval for prediction 
+f_horizon                   : 60                                                                        # time interval for prediction 
        
 label_var                   : False                                                                     # option for using current spread and take max       
 label_thresh                : 0.05                                                                      # 0.2 %, for midprice_once_mono, 0.4 % for midprice_once_volat (default : 0.1(10bp))
 label_secondary_lik_thresh  : 0.85                                                                      # likelihood thresh for secondary models
 
-smax                        : False                                                                      # softmax on // off in the model
-smax_out                    : False                                                                     # softmax on // off on the model output
+smax                        : False                                                                     # softmax on // off in the model
 
 test_num_classes            : 1                                                                         # Number of classes in test setting
 test_lik_thresh             : 0.5                                                                       # 2to3 conversion lik threshold
